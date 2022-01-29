@@ -68,8 +68,8 @@ jobs:
     - name: Build
       run: cargo build --all-targets --features default,risk_discord,risk_groupme,risk_image,risk_reddit,risk_captcha
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag site:$(date +%s)
+      run: docker build . --file Dockerfile --tag site:latest
     - name: Upload image
       uses: ishworkh/docker-image-artifact-upload@v1
       with:
-        image: "site:$(date +%s)"
+        image: "site:latest"
