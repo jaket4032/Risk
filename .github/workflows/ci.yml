@@ -41,8 +41,6 @@ jobs:
       run: rustup component add clippy --toolchain nightly-x86_64-unknown-linux-gnu
     - name: Clippy
       run: cargo +nightly clippy --all-targets --features default,risk_discord,risk_groupme,risk_image,risk_reddit,risk_captcha
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag site:$(date +%s)
 
   fmt:
     runs-on: ubuntu-latest
