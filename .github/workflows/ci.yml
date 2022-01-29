@@ -51,3 +51,23 @@ jobs:
     - name: Fmt
       run: cargo fmt -- --check
 
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: apt update
+      run: sudo apt update
+    - name: apt install libsystemd-dev
+      run: sudo apt install -y --no-install-recommends libsystemd-dev
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        override: true
+    - name: Cache Dependencies
+      uses: Swatinem/rust-cache@ce325b60658c1b38465c06cc965b79baf32c1e72
+    - name: Build
+      run: cargo build --all-targets --features default,risk_discord,risk_groupme,risk_image,risk_reddit,risk_captcha
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag site:$(date +%s)
