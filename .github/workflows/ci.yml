@@ -15,6 +15,7 @@ env:
   CI: 1
   CARGO_NET_RETRY: 10
   CARGO_INCREMENTAL: 0
+  
 
 jobs:
   build:
@@ -67,9 +68,19 @@ jobs:
       uses: Swatinem/rust-cache@ce325b60658c1b38465c06cc965b79baf32c1e72
     - name: Build
       run: cargo build --all-targets --features default,risk_discord,risk_groupme,risk_image,risk_reddit,risk_captcha
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag site:latest
-    - name: Upload image
-      uses: ishworkh/docker-image-artifact-upload@v1
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to Github Packages
+      uses: docker/login-action@v1
       with:
-        image: "site:latest"
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+    - name: Build image and push to Docker Hub and GitHub Container Registry
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        tags: latest
+        push: ${{ github.ref == 'refs/heads/stable' }}
+ 
