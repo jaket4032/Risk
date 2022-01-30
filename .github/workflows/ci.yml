@@ -15,7 +15,8 @@ env:
   CI: 1
   CARGO_NET_RETRY: 10
   CARGO_INCREMENTAL: 0
-  
+  REGISTRY: ghcr.io
+  IMAGE_NAME: risk_site
 
 jobs:
   build:
@@ -68,19 +69,23 @@ jobs:
       uses: Swatinem/rust-cache@ce325b60658c1b38465c06cc965b79baf32c1e72
     - name: Build
       run: cargo build --all-targets --features default,risk_discord,risk_groupme,risk_image,risk_reddit,risk_captcha
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v1
-    - name: Login to Github Packages
-      uses: docker/login-action@v1
+    - name: Log in to the Container registry
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
       with:
-        registry: ghcr.io
+        registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_PAT }}
-    - name: Build image and push to Docker Hub and GitHub Container Registry
-      uses: docker/build-push-action@v2
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
-        context: ./
-        tags: latest
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: .
         push: ${{ github.ref == 'refs/heads/stable' }}
- 
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
